@@ -94,13 +94,13 @@ with tab1:
     col_s_map, col_s_chart = st.columns([1, 1])
     with col_s_map:
         st.subheader("📍 港區地理位置 (錨地觀測)")
-        map_data = pd.DataFrame({"lat": [port_info["lat"]], "lon": [port_info["lon"]]})
-        st.map(map_data)
+        df_sea_map = pd.DataFrame({"lat": [port_info["lat"], port_info["lat"]+0.01], "lon": [port_info["lon"], port_info["lon"]+0.01]})
+        st.map(df_sea_map)
     with col_s_chart:
         st.subheader("📈 Kaggle 歷史數據：年度各月份平均船舶流量圖")
         df_kaggle = pd.DataFrame({"月份 (Month)": [f"{i}月" for i in range(1, 13)], "平均船舶數 (Ships)": port_info["monthly_data"]})
-        fig = px.line(df_kaggle, x="月份 (Month)", y="平均船舶數 (Ships)", title=f"{port_info['fullname']} 港口歷史流量週期走勢", markers=True)
-        st.plotly_chart(fig, use_container_width=True)
+        fig_sea = px.line(df_kaggle, x="月份 (Month)", y="平均船舶數 (Ships)", title=f"{port_info['fullname']} 港口歷史流量週期走勢", markers=True)
+        st.plotly_chart(fig_sea, use_container_width=True)
 
 # =========================================================================
 # 【第二頁籤：陸運大腦】
@@ -131,47 +131,103 @@ with tab2:
         truck_distribution = [random.randint(max(1, int(truck_count/15)), int(truck_count/5)) for _ in range(10)]
         df_truck = pd.DataFrame({"營運時段 (Hours)": hours, "預約車輛數 (Trucks)": truck_distribution})
         
-        # ✅ 修正點：這裡移除了引導變數賦值的語法瑕疵，圖表現在能 100% 完美渲染！
         fig_truck = px.bar(df_truck, x="營運時段 (Hours)", y="預約車輛數 (Trucks)", title="經排程優化後之卡車分流排程圖", color="預約車輛數 (Trucks)", color_continuous_scale="Viridis")
         st.plotly_chart(fig_truck, use_container_width=True)
 
 # =========================================================================
-# 【第三頁籤：互動策略模擬遊戲】
+# 【第三頁籤：互動策略模擬遊戲（🔥 進階長篇關卡版）】
 # =========================================================================
 with tab3:
     st.header("🎮 模擬大亨：印度超級港口海陸大調度")
-    st.markdown("##### 局長！目前港口正面臨緊急交通危機，請依據 Kaggle 大數據與即時氣象下達指令！")
+    st.markdown("##### 局長！目前港口正面臨連續物流危機，請根據即時數據與氣象做出連續決策！")
     st.divider()
-    
-    st.warning(f"**🚨 突發事件報告（Current Scenario at {selected_port}）**\n\n"
-               f"氣象回報當前即時風速高達 **{current_wind} km/h**！此時海面上有 5 艘巨型貨輪同時請求進港，"
-               f"且陸地上同時有 **{truck_count} 輛卡車** 正湧入港區大門準備載貨！")
-    
-    st.markdown("### 🛠️ 請下達您的調度指令：")
-    btn_A = st.button("🔴 選項 A：維持傳統作法（不管天氣，大船直接進港、卡車隨機放行）")
-    btn_B = st.button("🟡 選項 B：實施單邊優化（通知大船綠色減速慢行，但放任卡車在陸地排隊）")
-    btn_C = st.button("🟢 選項 C：啟動海陸智慧一體化（大船 Just-in-Time 減速，陸運啟動卡車時間窗排程）")
-    
-    st.divider()
-    st.markdown("### 📊 決策戰報分析：")
-    
-    if btn_A:
-        st.error("❌ **決策結果：港口大破產！營運慘敗！**")
-        st.markdown(f"* **海運慘況：** 因為風速過大（{current_wind} km/h），大船硬要進港導致在通道大塞車，燃油與滯期費當場飆破 **${sea_loss*2:,.0f} USD**！\n"
-                    f"* **陸運慘況：** {truck_count} 輛卡車卡在門口動彈不得，回堵時間高達 **{truck_count*0.45:.0f} 分鐘**，周邊交通完全癱瘓！\n"
-                    f"* **局長總評：** 傳統不做預測的黑盒子作法，讓港口商譽蕩然無存。**最終得分：-5000 分**")
-    elif btn_B:
-        st.warning("⚠️ **決策結果：及格邊緣！頭痛醫頭、腳痛醫頭！**")
-        st.markdown(f"* **海運狀況：** 成功利用系統通知大船實施「綠色減速」，海上營運成本控制在 **${sea_loss:,.0f} USD**。\n"
-                    f"* **陸運慘況：** 遺憾的是，您忽略了陸運聯運。{truck_count} 輛卡車依然塞在港區門口回堵，港區倉庫爆倉！\n"
-                    f"* **局長總評：** 海運做好了，陸運卻崩潰。這證明了「缺乏海陸一體化聯運」系統的嚴重缺失。**最終得分：+1500 分**")
-    elif btn_C:
-        st.success("🏆 **決策結果：完美破關！全場最卓越的智慧港務大亨！**")
-        st.markdown(f"* **海運神調度：** 完美對接大數據，大船實施 Just-in-Time 綠色減速，剛好錯開極端天氣，無痛進港！\n"
-                    f"* **陸運神調度：** 陸運同時啟動卡車預約時間窗，排隊時間當場縮短 66%，每輛卡車平均只等 **{truck_count*0.15:.1f} 分鐘**，海陸運無縫接軌！\n"
-                    f"* **局長總評：** 您完美利用了 **Kaggle 大數據與即時 API** 解決了行業痛點，達成了低碳、環保、省錢的雙贏局面！**最終得分：+10000 分（滿分大獲全勝！）**")
-    else:
-        st.info("💡 報告現場提示：請邀請台下的教授或同學，直接點選上方按鈕來親自體驗「港務局長」的決策挑戰！")
+
+    # 初始化遊戲狀態（記憶體）
+    if "game_stage" not in st.session_state:
+        st.session_state.game_stage = 1
+        st.session_state.game_score = 0
+        st.session_state.game_log = []
+
+    # 重新開始遊戲按鈕
+    if st.button("🔄 重新開始新賽局"):
+        st.session_state.game_stage = 1
+        st.session_state.game_score = 0
+        st.session_state.game_log = []
+        st.rerun()
+
+    # 呈現目前戰況指標
+    st.info(f"📊 **目前進度：第 {st.session_state.game_stage} 關 / 總得分：{st.session_state.game_score} 分**")
+
+    # ---- 第一關：海運危機 ----
+    if st.session_state.game_stage == 1:
+        st.markdown(f"### 🛑 第一關：遠洋極端氣候突襲")
+        st.warning(f"**【情境】** 目前即時風速測到 **{current_wind} km/h**，外海有 5 艘剛從歐洲過來、急需清關的超級貨輪。此時 Kaggle 歷史塞港率正處於歷史高點，請問該如何應對？")
+        
+        c1, c2 = st.columns(2)
+        if c1.button("🔴 A. 全速進港：港口優先，要船隻一律不准減速、立刻強行進港。"):
+            st.session_state.game_score -= 3000
+            st.session_state.game_log.append("第一關選擇強行進港：風速過大導致通道擦撞意外，引發嚴重塞港（扣 3000 分）。")
+            st.session_state.game_stage = 2
+            st.rerun()
+        if c2.button("🟢 B. 綠色慢行：啟動 weather_fetcher，要求大船實施 Just-in-Time 減速，錯開強風。"):
+            st.session_state.game_score += 4000
+            st.session_state.game_log.append("第一關選擇綠色慢行：完美運用氣象 API 避開極端天氣，無痛進港並節省燃油（加 4000 分）。")
+            st.session_state.game_stage = 2
+            st.rerun()
+
+    # ---- 第二關：陸運塞車 ----
+    elif st.session_state.game_stage == 2:
+        st.markdown("### 🚛 第二關：陸運回堵大癱瘓")
+        st.warning(f"**【情境】** 大船上的貨櫃順利卸岸。此時大門口有 **{truck_count} 輛卡車** 突然在同一個小時蜂擁而至，港外聯外道路完全卡死，後方車流回堵數公里！")
+        
+        c1, c2 = st.columns(2)
+        if c1.button("🔴 A. 傳統作法：大門全開、車來就放，讓卡車在港區內部自行找車位排隊。"):
+            st.session_state.game_score -= 2000
+            st.session_state.game_log.append("第二關選擇傳統隨機放行：港區內部動線大交織，回堵時間飆破 100 分鐘（扣 2000 分）。")
+            st.session_state.game_stage = 3
+            st.rerun()
+        if c2.button("🟢 B. 時間窗排程：啟動卡車預約分流演算法，強制執行時段分流管制。"):
+            st.session_state.game_score += 4000
+            st.session_state.game_log.append("第二關選擇時間窗排程：成功發揮系統分流成效，排隊時間直接大縮短 66%（加 4000 分）。")
+            st.session_state.game_stage = 3
+            st.rerun()
+
+    # ---- 第三關：清關爆倉 ----
+    elif st.session_state.game_stage == 3:
+        st.markdown("### 📦 第三關：內陸路由樞紐崩潰")
+        st.warning("**【情境】** 卡車順利載到貨櫃。此時內陸的新德里轉運中心（Delhi Terminal）發生大淹水，多數配送幹道封閉，大批後續物流眼看就要延誤。")
+        
+        c1, c2 = st.columns(2)
+        if c1.button("🔴 A. 按原計畫：不變更動線，賭一把看看明天路會不會通。"):
+            st.session_state.game_score -= 3000
+            st.session_state.game_log.append("第三關選擇盲目等待：卡車群全數困在水淹路段，貨物嚴重延誤引發商譽大損失（扣 3000 分）。")
+            st.session_state.game_stage = 4
+            st.rerun()
+        if c2.button("🟢 B. 軸幅網路重分配：啟動多式聯運最佳路由（Routing），自動繞道將貨物改配至清奈、班加羅爾等未受災樞紐。"):
+            st.session_state.game_score += 4000
+            st.session_state.game_log.append("第三關選擇最佳路由繞道：成功發揮 Hub-and-Spoke 戰略價值，繞開受災區完成內陸配送（加 4000 分）。")
+            st.session_state.game_stage = 4
+            st.rerun()
+
+    # ---- 賽局結束：總結算 ----
+    elif st.session_state.game_stage == 4:
+        st.markdown("### 🏆 局長經營總結算（Simulation Result）")
+        st.divider()
+        
+        # 根據最終分數給予頭銜
+        final_score = st.session_state.game_score
+        if final_score >= 10000:
+            st.success(f"🏅 **最終得分：{final_score} 分 —— 評價：【傳奇神級・智慧港務大亨】**")
+        elif final_score >= 3000:
+            st.warning(f"🥈 **最終得分：{final_score} 分 —— 評價：【中規中矩・合格物流經理】**")
+        else:
+            st.error(f"🚨 **最終得分：{final_score} 分 —— 評價：【營運破產・不及格傳統局長】**")
+            
+        st.markdown("### 📝 本局決策軌跡與報告佐證：")
+        for log in st.session_state.game_log:
+            st.markdown(f"- {log}")
+            
+        st.info("💡 **上台簡報必殺技：** 報告時可以跟教授說：『我們特地用系統開發了這款三關卡策略遊戲。只要不用我們開發的大數據與 API 優化模型（一律選選項 A），最後就會落入【營運破產】的傳統痛點；但只要套用我們的海陸智慧一體化決策（一律選選項 B），就能輕鬆拿到【傳奇神級大亨】的滿分成就！這充分證實了本系統的商務實用價值！』")
 
 # =========================================================================
 # 【第四頁籤：技術架構畫布】
@@ -185,8 +241,9 @@ with tab4:
     with col_tech1: 
         st.info("📦 **Frontend & UI (前端與部署)**\n\n* **Streamlit Web Framework**\n* **GitHub Repositories**\n* **Streamlit Cloud PaaS**\n\n*優化亮點：一體化多頁籤 (Tabs) 切換控制，高互動流體拉桿與全動態看板連動機制。*")
     with col_tech2: 
-        st.success("📊 **Data & Analytics (數據與視覺化)**\n\n* **Kaggle Big Data Core**\n* **Pandas Core Library**\n* **Plotly Express Graphs**\n\n*優化亮點：預先嵌入 12 大港口 12 年期歷史交通與吞吐量時間序列，精準驅動流量週期走勢分析。*")
+        st.success("📊 **Data & Analytics (數據與視覺化)**\n\n* **Kaggle Big Data Collection**\n* **Pandas Core Library**\n* **Plotly Express Graphs**\n\n*優化亮點：預先嵌入 12 大港口 12 年期歷史交通與吞吐量時間序列，精準驅動流量週期走勢分析。*")
     with col_tech3: 
         st.warning("📡 **Backend & API (後端與效能)**\n\n* **Open-Meteo REST API**\n* **Python Requests Module**\n* **st.cache_data Optimizer**\n\n*優化亮點：透過 API 動態解析實時風速，並部署快取防禦機制，大幅減少重複查詢次數，防止流量崩潰。*")
 
-    st.markdown("<center style='color:gray; font-size:12px;'>© 2026 交通流量分析小組. All Rights Reserved. 系統編譯版本：v1.0.0-Release</center>", unsafe_allow_html=True)
+    st.divider()
+    st.text("© 2026 交通流量分析小組. All Rights Reserved. Version 1.0.0-Release")
