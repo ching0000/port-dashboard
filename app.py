@@ -5,28 +5,49 @@ import datetime
 import requests
 
 # 1. 網頁基本設定
-st.set_page_config(page_title="印度港口交通與天氣預測系統", layout="wide")
+st.set_page_config(page_title="印度全港口交通與天氣預測系統", layout="wide")
 
-st.title("🚢 Indian Port Congestion & Weather Forecasting System")
-st.markdown("本系統整合印度主要港口的船舶流量，並透過**即時與未來 3 天天氣預測**來評估港口塞船風險。")
+st.title("🚢 Indian All-Ports Congestion & Weather Forecasting System")
+st.markdown("本系統整合印度 **12 大官方主要港口**的船舶流量，並透過即時與未來天氣預測評估港區塞船風險。")
 
-# 2. 側邊欄控制面板
+# 2. 側邊欄控制面板（12個大港口全部列出來！）
 with st.sidebar:
     st.header("⚙️ Port Control Panel")
     selected_port = st.selectbox(
         "Select Port (選擇印度港口)", 
-        ["Mumbai (孟買港)", "Chennai (清奈港)", "Kolkata (加爾各答港)", "Kandla (坎德拉港)"]
+        [
+            "Mumbai (孟買港)", 
+            "Chennai (清奈港)", 
+            "Kolkata (加爾各答港)", 
+            "Kandla / Deendayal (坎德拉港)",
+            "JNPT / Navi Mumbai (新孟買港)",
+            "Mormugao (莫爾穆加奧港)",
+            "New Mangalore (新芒格洛爾港)",
+            "Cochin (柯枝港)",
+            "Tuticorin / V.O.C. (圖蒂科林港)",
+            "Visakhapatnam (維沙卡帕特南港)",
+            "Paradip (帕拉迪普港)",
+            "Ennore / Kamarajar (恩諾爾港)"
+        ]
     )
     st.markdown("---")
     st.markdown("### 交通流量分析小組")
-    st.caption("Project: Indian Port Weather & Congestion Predictor")
+    st.caption("Project: Indian All-Ports Weather Predictor")
 
-# 3. 印度港口經緯度對照表
+# 3. 印度 12 大主要港口經緯度對照表（完全補齊！）
 port_mapping = {
     "Mumbai (孟買港)": {"lat": 18.95, "lon": 72.82, "fullname": "Mumbai"},
     "Chennai (清奈港)": {"lat": 13.09, "lon": 80.30, "fullname": "Chennai"},
     "Kolkata (加爾各答港)": {"lat": 22.54, "lon": 88.31, "fullname": "Kolkata"},
-    "Kandla (坎德拉港)": {"lat": 23.01, "lon": 70.22, "fullname": "Kandla"}
+    "Kandla / Deendayal (坎德拉港)": {"lat": 23.01, "lon": 70.22, "fullname": "Kandla"},
+    "JNPT / Navi Mumbai (新孟買港)": {"lat": 18.95, "lon": 72.94, "fullname": "JNPT"},
+    "Mormugao (莫爾穆加奧港)": {"lat": 15.41, "lon": 73.80, "fullname": "Mormugao"},
+    "New Mangalore (新芒格洛爾港)": {"lat": 12.93, "lon": 74.81, "fullname": "New Mangalore"},
+    "Cochin (柯枝港)": {"lat": 9.96, "lon": 76.26, "fullname": "Cochin"},
+    "Tuticorin / V.O.C. (圖蒂科林港)": {"lat": 8.75, "lon": 78.19, "fullname": "Tuticorin"},
+    "Visakhapatnam (維沙卡帕特南港)": {"lat": 17.69, "lon": 83.29, "fullname": "Visakhapatnam"},
+    "Paradip (帕拉迪普港)": {"lat": 20.26, "lon": 86.67, "fullname": "Paradip"},
+    "Ennore / Kamarajar (恩諾爾港)": {"lat": 13.25, "lon": 80.34, "fullname": "Ennore"}
 }
 coords = port_mapping[selected_port]
 
@@ -49,7 +70,6 @@ def fetch_weather_and_forecast(lat, lon):
             })
         }
     except:
-        # API 斷線時的備用模擬數據
         today = datetime.date.today()
         return {
             "current_temp": 28.5,
@@ -80,7 +100,6 @@ else:
 # 6. 網頁看板呈現
 st.subheader(f"📊 Live Indicators & Risk Assessment: {selected_port}")
 
-# 顯示風險警報標籤
 if risk_color == "error":
     st.error(f"**港口狀態：{risk_level}** \n\n {risk_desc}")
 else:
