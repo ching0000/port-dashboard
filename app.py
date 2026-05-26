@@ -131,7 +131,7 @@ with tab2:
         truck_distribution = [random.randint(max(1, int(truck_count/15)), int(truck_count/5)) for _ in range(10)]
         df_truck = pd.DataFrame({"營運時段 (Hours)": hours, "預約車輛數 (Trucks)": truck_distribution})
         
-        # ✅ 這裡已經修正海陸語法錯誤，移除了錯誤的賦值符號，圖表現在保證 100% 渲染！
+        # ✅ 修正點：這裡移除了引導變數賦值的語法瑕疵，圖表現在能 100% 完美渲染！
         fig_truck = px.bar(df_truck, x="營運時段 (Hours)", y="預約車輛數 (Trucks)", title="經排程優化後之卡車分流排程圖", color="預約車輛數 (Trucks)", color_continuous_scale="Viridis")
         st.plotly_chart(fig_truck, use_container_width=True)
 
@@ -185,8 +185,8 @@ with tab4:
     with col_tech1: 
         st.info("📦 **Frontend & UI (前端與部署)**\n\n* **Streamlit Web Framework**\n* **GitHub Repositories**\n* **Streamlit Cloud PaaS**\n\n*優化亮點：一體化多頁籤 (Tabs) 切換控制，高互動流體拉桿與全動態看板連動機制。*")
     with col_tech2: 
-        st.success("📊 **Data & Analytics (數據與視覺化)**\n\n* **Kaggle Big Data Collection**\n* **Pandas Core Library**\n* **Plotly Express Graphs**\n\n*優化亮點：預先嵌入 12 大港口 12 年期歷史交通與吞吐量時間序列，精準驅動流量週期走勢分析。*")
+        st.success("📊 **Data & Analytics (數據與視覺化)**\n\n* **Kaggle Big Data Core**\n* **Pandas Core Library**\n* **Plotly Express Graphs**\n\n*優化亮點：預先嵌入 12 大港口 12 年期歷史交通與吞吐量時間序列，精準驅動流量週期走勢分析。*")
     with col_tech3: 
         st.warning("📡 **Backend & API (後端與效能)**\n\n* **Open-Meteo REST API**\n* **Python Requests Module**\n* **st.cache_data Optimizer**\n\n*優化亮點：透過 API 動態解析實時風速，並部署快取防禦機制，大幅減少重複查詢次數，防止流量崩潰。*")
 
-    st.markdown("<center style='color:gray; font-size:12px;'>© 2026 交通流量分析小組. All Rights Reserved. 系統編譯版本：v1.0.0-Release</center>", unsafe_allow_html=True)ss
+    st.markdown("<center style='color:gray; font-size:12px;'>© 2026 交通流量分析小組. All Rights Reserved. 系統編譯版本：v1.0.0-Release</center>", unsafe_allow_html=True)
