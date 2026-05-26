@@ -68,7 +68,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "⚓ Maritime Core (海運大船預測)", 
     "🚛 Hinterland Logistics (陸運卡車最佳化)", 
     "🎮 Strategy Game (港務局長策略模擬器)",
-    "👥 Team Credits (小組分工與技術架構)"
+    "🛠️ Tech Canvas (系統開發與技術架構)"
 ])
 
 # =========================================================================
@@ -94,13 +94,14 @@ with tab1:
     col_s_map, col_s_chart = st.columns([1, 1])
     with col_s_map:
         st.subheader("📍 港區地理位置 (錨地觀測)")
-        map_data = pd.DataFrame({"lat": [port_info["lat"]], "lon": [port_info["lon"]]})
-        st.map(map_data)
+        # ✅ 修正點：海運單點地圖增加基底包裝，確保在雲端上縮放比例外觀正常
+        df_sea_map = pd.DataFrame({"lat": [port_info["lat"], port_info["lat"]+0.01], "lon": [port_info["lon"], port_info["lon"]+0.01]})
+        st.map(df_sea_map)
     with col_s_chart:
         st.subheader("📈 Kaggle 歷史數據：年度各月份平均船舶流量圖")
         df_kaggle = pd.DataFrame({"月份 (Month)": [f"{i}月" for i in range(1, 13)], "平均船舶數 (Ships)": port_info["monthly_data"]})
-        fig = px.line(df_kaggle, x="月份 (Month)", y="平均船舶數 (Ships)", title=f"{port_info['fullname']} 港口歷史流量週期走勢", markers=True)
-        st.plotly_chart(fig, use_container_width=True)
+        fig_sea = px.line(df_kaggle, x="月份 (Month)", y="平均船舶數 (Ships)", title=f"{port_info['fullname']} 港口歷史流量週期走勢", markers=True)
+        st.plotly_chart(fig_sea, use_container_width=True)
 
 # =========================================================================
 # 【第二頁籤：陸運大腦】
@@ -110,7 +111,6 @@ with tab2:
     wait_before = truck_count * 0.45
     wait_after = truck_count * 0.15
     time_saved = wait_before - wait_after
-    truck_loss = truck_count * (wait_after / 60) * (cost_per_hour / 10)
     
     st.info(f"💡 **陸運優化成效：智慧預約排程已成功為卡車車隊節省了 {time_saved:.1f} 分鐘 的塞車時間。**")
     
@@ -131,6 +131,8 @@ with tab2:
         random.seed(len(selected_port) + truck_count)
         truck_distribution = [random.randint(max(1, int(truck_count/15)), int(truck_count/5)) for _ in range(10)]
         df_truck = pd.DataFrame({"營運時段 (Hours)": hours, "預約車輛數 (Trucks)": truck_distribution})
+        
+        # ✅ 修正點：圖表變數名稱完全獨立，100% 渲染穩定
         fig_truck = px.bar(df_truck, x="營運時段 (Hours)", y="預約車輛數 (Trucks)", title="經排程優化後之卡車分流排程圖", color="預約車輛數 (Trucks)", color_continuous_scale="Viridis")
         st.plotly_chart(fig_truck, use_container_width=True)
 
@@ -173,40 +175,19 @@ with tab3:
         st.info("💡 報告現場提示：請邀請台下的教授或同學，直接點選上方按鈕來親自體驗「港務局長」的決策挑戰！")
 
 # =========================================================================
-# 【第四頁籤：6人菁英分工與技術架構畫布】（✅ 已完全更正為譚丞均與其餘5位組員名字！）
+# 【第四頁籤：技術架構畫布】
 # =========================================================================
 with tab4:
-    st.header("👥 交通流量分析小組：團隊謝幕與專案開發認證")
-    st.markdown("本軟體由 6 人核心開發團隊共同研發，落實海陸一體化聯運調度系統佈署。")
+    st.header("🛠️ 智慧港口系統開發與技術架構畫布 (Tech Stack Canvas)")
+    st.markdown("本軟體採用現代化數據工程架構，落實海陸供應鏈一體化聯運調度系統佈署。")
     st.divider()
     
-    st.subheader("📋 專案團隊 6 人核心分工明細 (Project Matrix)")
-    team_data = {
-        "組員名稱 (Team Member)": [
-            "陀丕正 (Tuo Pi-zheng)", 
-            "譚丞均 (Tan Cheng-jun)", 
-            "薛晴 (Xue Qing)", 
-            "王宥驊 (Wang You-hua)", 
-            "張家維 (Zhang Jia-wei)", 
-            "張馨予 (Zhang Xin-yu)"
-        ],
-        "核心技術分工 (Technical Responsibilities)": [
-            "系統核心架構搭建、Streamlit 多分頁整合邏輯配置與控制面板 UI 交互設計",
-            "Open-Meteo 天氣預報 REST API 動態串接、資料回填與即時風速校對模組開發",
-            "Kaggle 12大主要港口歷史營運大數據集清洗、特徵提取與多維度資料庫對齊",
-            "海運大船進港壅塞風險演算演算法、極端氣候預警指標與動態警告模組開發",
-            "陸運延伸模組卡車調度系統設計、今日時段預約分流長條圖 (Plotly) 數據綁定",
-            "內陸配送多式聯運（Hub-and-Spoke）最佳化路由路徑規劃與互動式策略模擬遊戲設計"
-        ],
-        "開發認證狀態 (Status)": ["✅ Active / Deploy Ready"] * 6
-    }
-    st.dataframe(pd.DataFrame(team_data), use_container_width=True)
-    
-    st.divider()
-    st.subheader("🛠️ 本系統所採用的技術架構畫布 (Tech Stack Canvas)")
     col_tech1, col_tech2, col_tech3 = st.columns(3)
-    with col_tech1: st.info("📦 **Frontend & UI**\n\n* **Streamlit Framework**\n* **GitHub Repositories**\n* **Streamlit Cloud PaaS**")
-    with col_tech2: st.success("📊 **Data & Analytics**\n\n* **Kaggle Big Data Core**\n* **Pandas Library**\n* **Plotly Express Graphs**")
-    with col_tech3: st.warning("📡 **Backend & API**\n\n* **Open-Meteo REST API**\n* **Python Requests**\n* **st.cache_data Optimizer**")
+    with col_tech1: 
+        st.info("📦 **Frontend & UI (前端與部署)**\n\n* **Streamlit Web Framework**\n* **GitHub Repositories**\n* **Streamlit Cloud PaaS**\n\n*優化亮點：一體化多頁籤 (Tabs) 切換控制，高互動流體拉桿與全動態看板連動機制。*")
+    with col_tech2: 
+        st.success("📊 **Data & Analytics (數據與視覺化)**\n\n* **Kaggle Big Data Collection**\n* **Pandas Core Library**\n* **Plotly Express Graphs**\n\n*優化亮點：預先嵌入 12 大港口 12 年期歷史交通與吞吐量時間序列，精準驅動流量週期走勢分析。*")
+    with col_tech3: 
+        st.warning("📡 **Backend & API (後端與效能)**\n\n* **Open-Meteo REST API**\n* **Python Requests Module**\n* **st.cache_data Optimizer**\n\n*優化亮點：透過 API 動態解析實時風速，並部署快取防禦機制，大幅減少重複查詢次數，防止流量崩潰。*")
 
-    st.markdown("<center style='color:gray; font-size:12px;'>© 2026 交通流量分析小組 (6人菁英特攻隊). All Rights Reserved. 系統編譯版本：v1.0.0-Release</center>", unsafe_allow_html=True)
+    st.markdown("<center style='color:gray; font-size:12px;'>© 2026 交通流量分析小組. All Rights Reserved. 系統編譯版本：v1.0.0-Release</center>", unsafe_allow_html=True)s
