@@ -25,7 +25,7 @@ with st.sidebar:
 port_mapping = {
     "Mumbai (孟買港)": {"lat": 18.95, "lon": 72.82, "fullname": "Mumbai"},
     "Chennai (清奈港)": {"lat": 13.09, "lon": 80.30, "fullname": "Chennai"},
-    "Kolkata (加爾開各答港)": {"lat": 22.54, "lon": 88.31, "fullname": "Kolkata"},
+    "Kolkata (加爾各答港)": {"lat": 22.54, "lon": 88.31, "fullname": "Kolkata"},
     "Kandla (坎德拉港)": {"lat": 23.01, "lon": 70.22, "fullname": "Kandla"}
 }
 coords = port_mapping[selected_port]
@@ -33,7 +33,6 @@ coords = port_mapping[selected_port]
 # 4. 串接 API 抓取即時天氣 + 未來 3 天預測
 @st.cache_data(ttl=600)
 def fetch_weather_and_forecast(lat, lon):
-    # 同時請求即時天氣 (current_weather) 與每日天氣預測 (daily=temperature_2m_max,windspeed_10m_max,rain_sum)
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&daily=temperature_2m_max,windspeed_10m_max,rain_sum&timezone=auto"
     try:
         res = requests.get(url).json()
@@ -65,8 +64,8 @@ def fetch_weather_and_forecast(lat, lon):
 
 weather_data = fetch_weather_and_forecast(coords["lat"], coords["lon"])
 
-# 5. 塞船風險評估邏輯 (根據當前風速與預測最大風速)
-current_wind = weather_data["current_temp"] # 抓取風速數字
+# 5. 塞船風險評估邏輯
+current_wind = weather_data["current_wind"]
 max_forecast_wind = weather_data["forecast_df"]["最大風速 (km/h)"].max()
 
 if max_forecast_wind > 30 or weather_data["forecast_df"]["累積降雨量 (mm)"].max() > 30:
@@ -107,13 +106,11 @@ with col_map:
     map_data = pd.DataFrame({"lat": [coords["lat"]], "lon": [coords["lon"]]})
     st.map(map_data)
     
-    # 呈現未來 3 天的天氣預報表格
     st.markdown("### 📅 3-Day Weather Forecast (未來 3 天天氣預報)")
     st.dataframe(weather_data["forecast_df"], use_container_width=True)
 
 with col_chart:
     st.subheader("📈 3-Day Wind Speed Forecast (未來風速預測趨勢)")
-    # 將未來風速畫成柱狀圖，方便一眼看出哪一天風太大會塞船
     fig = px.bar(
         weather_data["forecast_df"], 
         x="日期 (Date)", 
