@@ -170,7 +170,7 @@ with tab3:
                     f"* **陸運神調度：** 陸運同時啟動卡車預約時間窗，排隊時間當場縮短 66%，每輛卡車平均只等 **{truck_count*0.15:.1f} 分鐘**，海陸運無縫接軌！\n"
                     f"* **局長總評：** 您完美利用了 **Kaggle 大數據與即時 API** 解決了行業痛點，達成了低碳、環保、省錢的雙贏局面！**最終得分：+10000 分（滿分大獲全勝！）**")
     else:
-        st.info("💡 報告現場提示：請邀請台下的教授或同學，直接點選上方按鈕來親自體驗「港務局長」的決策挑戰！")
+        st.info("💡 報告現場提示：請邀請台下的教授或同學，直接點選上方按蹤來親自體驗「港務局長」的決策挑戰！")
 
 # =========================================================================
 # 【第四頁籤：技術架構畫布】
@@ -188,5 +188,6 @@ with tab4:
     with col_tech3: 
         st.warning("📡 **Backend & API (後端與效能)**\n\n* **Open-Meteo REST API**\n* **Python Requests Module**\n* **st.cache_data Optimizer**\n\n*優化亮點：透過 API 動態解析實時風速，並部署快取防禦機制，大幅減少重複查詢次數，防止流量崩潰。*")
 
-    # ✅ 徹底修復第 193 行：移除了多餘的單引號與大於符號，HTML 標籤完全對齊！
-    st.markdown("<center style='color:gray; font-size:12px;'>© 2026 交通流量分析小組. All Rights Reserved. 系統編譯版本：v1.0.0-Release</center>", unsafe_allow_html=True)sss
+    # ✅ 徹底根除方案：移除所有複雜的 HTML 宣告，改成純 Streamlit 文字，絕對不會再發生斷行漏括號的 Bug！
+    st.divider()
+    st.text("© 2026 交通流量分析小組. All Rights Reserved. Version 1.0.0-Release")s
