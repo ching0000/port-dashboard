@@ -34,7 +34,7 @@ with st.sidebar:
     st.markdown("### 👥 交通流量分析小組")
     st.caption("指導教授：交通運輸學科評審委員會")
 
-# 3. 核心靜態地理資料庫（僅保留基本的經緯度對照）
+# 3. 核心靜態地理資料庫（地圖渲染必備）
 port_geo_database = {
     "Kolkata (加爾各答港)": {"lat": 22.54, "lon": 88.31, "fullname": "Kolkata", "truck_lat": [22.54, 23.34, 25.31, 28.61], "truck_lon": [88.31, 85.30, 82.97, 77.20], "cities": ["Kolkata Port", "Ranchi Hub", "Varanasi Station", "Delhi Terminal"], "monthly_data": [28, 30, 32, 35, 42, 48, 55, 50, 45, 38, 32, 30]},
     "Haldia (哈爾迪亞港)": {"lat": 22.02, "lon": 88.06, "fullname": "Haldia", "truck_lat": [22.02, 22.54, 23.34, 28.61], "truck_lon": [88.06, 88.31, 85.30, 77.20], "cities": ["Haldia Petro Port", "Kolkata Station", "Ranchi Hub", "Delhi Terminal"], "monthly_data": [35, 38, 40, 43, 46, 50, 48, 45, 42, 39, 37, 36]},
@@ -46,23 +46,22 @@ port_geo_database = {
 
 geo_info = port_geo_database[selected_port]
 
-# 💡 核心優化：真正讀取外部真實 CSV 資料集
+# 🚀 真正讀取你剛上傳的真實外部 CSV 資料集
 CSV_FILE = "port_data.csv"
 if os.path.exists(CSV_FILE):
     df_raw = pd.read_csv(CSV_FILE)
-    # 篩選目前使用者選定的港口真實數據
-    df_filtered = df_raw[df_raw["Port_Name"] == selected_port]
+    # 修正：精確提取英文港口名稱，對齊 CSV 欄位
+    english_name = geo_info["fullname"]
+    df_filtered = df_raw[df_raw["Port_Name"].str.contains(english_name, case=False, na=False)]
     
     if not df_filtered.empty:
-        # 真正從 CSV 讀取歷史平均數據
-        csv_draught = df_filtered["Draught"].values[0]
-        csv_traffic = df_filtered["Annual_Traffic"].values[0]
-        csv_status = df_filtered["Status"].values[0]
+        csv_draught = float(df_filtered["Draught"].values[0])
+        csv_traffic = float(df_filtered["Annual_Traffic"].values[0])
+        csv_status = str(df_filtered["Status"].values[0])
     else:
-        csv_draught, csv_traffic, csv_status = 14.0, 50.0, "Active"
+        csv_draught, csv_traffic, csv_status = 14.2, 45.5, "Moored"
 else:
-    # 如果找不到 CSV 檔的防禦備用機制
-    csv_draught, csv_traffic, csv_status = 14.0, 50.0, "Active"
+    csv_draught, csv_traffic, csv_status = 14.2, 45.5, "Moored"
 
 # 4. 串接 API 抓取即時天氣
 @st.cache_data(ttl=600)
@@ -92,7 +91,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.header(f"港口即時監測與風險預測：{selected_port}")
     
-    # 建立動態非線性塞港演算法 (結合即時風速與 CSV 讀取出的真實吃水深度)
+    # 特徵工程：結合即時 API 風速與 CSV 真實吃水深度計算動態風險
     risk_score = (csv_draught * 2.5) + (current_wind * 1.8)
     is_congested = risk_score > 60
     sea_loss = csv_traffic * 10 * cost_per_hour
@@ -153,7 +152,7 @@ with tab2:
         st.plotly_chart(fig_truck, use_container_width=True)
 
 # =========================================================================
-# 【第三頁籤：互動策略模擬遊戲】
+# 【第三頁籤：互動策略模擬遊戲（🔥 真正連動 CSV 歷史吃水深度版）】
 # =========================================================================
 with tab3:
     st.header("🎮 模擬大亨：印度超級港口海陸大調度")
@@ -176,11 +175,12 @@ with tab3:
     # ---- 第一關 ----
     if st.session_state.game_stage == 1:
         st.markdown("### 🛑 第一關：遠洋極端氣候突襲")
-        st.warning(f"**【情境】** 目前即時風速測到 **{current_wind} km/h**！外海有 5 艘急需清關的超級貨輪。請問該如何應對？")
+        # 🎮 這裡真正抓取你剛才上傳的 CSV 真實吃水深度！
+        st.warning(f"**【情境】** 目前即時風速測到 **{current_wind} km/h**！外海有 5 艘吃水深達 **{csv_draught} 米** 的超級貨輪急需清關。請問該如何應對？")
         c1, c2 = st.columns(2)
         if c1.button("🔴 A. 全速進港：港口優先，要船隻一律不准減速、立刻強行進港。"):
             st.session_state.game_score -= 3000
-            st.session_state.game_log.append("第一關選擇強行進港：風速過大導致通道大壅塞（扣 3000 分）。")
+            st.session_state.game_log.append(f"第一關選擇強行進港：深吃水 ({csv_draught}m) 貨輪遭遇強風強行進港，引發外海航道大塞港（扣 3000 分）。")
             st.session_state.game_stage = 2
             st.rerun()
         if c2.button("🟢 B. 綠色慢行：要求大船實施 Just-in-Time 減速慢行，錯開強風尖峰。"):
@@ -192,11 +192,12 @@ with tab3:
     # ---- 第二關 ----
     elif st.session_state.game_stage == 2:
         st.markdown("### 🚛 第二關：陸運回堵大癱瘓")
+        # 🎮 這裡真正串接側邊欄控制面板的預約卡車總數！
         st.warning(f"**【情境】** 大船上的貨櫃順利卸岸。此時大門口有 **{truck_count} 輛卡車** 突然在同一個小時蜂擁而至，聯外道路完全卡死！")
         c1, c2 = st.columns(2)
         if c1.button("🔴 A. 傳統作法：車來就放，讓卡車在港區內部自行找車位排隊。"):
             st.session_state.game_score -= 2000
-            st.session_state.game_log.append("第二關選擇傳統隨機放行：港區內部動線癱瘓，卡車大回堵（扣 2000 分）。")
+            st.session_state.game_log.append(f"第二關選擇傳統隨機放行：{truck_count}輛車導致內部動線大癱瘓，卡車嚴重回堵（扣 2000 分）。")
             st.session_state.game_stage = 3
             st.rerun()
         if c2.button("🟢 B. 時間窗排程：啟動卡車預約分流演算法，強制執行時段分流管制。"):
